@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:tes/pages/beranda/beranda.dart'; // ganti sesuai path kamu
+import 'package:tes/pages/beranda/beranda.dart';
 
 class HasilDeteksi
     extends StatelessWidget {
@@ -18,7 +18,7 @@ class HasilDeteksi
   Widget
       build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1D9B6C), // Latar belakang hijau
+      backgroundColor: const Color(0xFF1D9B6C),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1D9B6C),
         elevation: 0,

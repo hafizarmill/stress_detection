@@ -1,16 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tes/utils/tflite_helper.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart'
     as img;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:tes/pages/petunjuk/petunjuk.dart';
+import 'package:tes/pages/kuisioner/kuisioner.dart';
 import 'package:tes/utils/riwayat_provider.dart';
 import 'package:tes/utils/riwayat_item.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:tes/pages/petunjuk/petunjuk.dart';
 
 class Kamera
     extends StatefulWidget {
@@ -32,9 +33,18 @@ class _KameraPageState
   bool
       _loading =
       false;
-
-  late final FaceDetector
+  late FaceDetector
       _faceDetector;
+  String?
+      _jam;
+  String?
+      _tanggal;
+  bool
+      _tombolKuisioner =
+      false;
+  bool
+      _sudahSimpan =
+      false;
 
   @override
   void
@@ -42,11 +52,7 @@ class _KameraPageState
     super.initState();
     _faceDetector =
         FaceDetector(
-      options: FaceDetectorOptions(
-        enableContours: false,
-        enableClassification: false,
-        enableLandmarks: false,
-      ),
+      options: FaceDetectorOptions(),
     );
   }
 
@@ -58,36 +64,21 @@ class _KameraPageState
   }
 
   Future<void>
-      ambilFoto() async {
+      _ambilFotoAtauGaleri(ImageSource source) async {
     final pickedFile =
-        await _picker.pickImage(
-      source: ImageSource.camera,
-      preferredCameraDevice: CameraDevice.front,
-    );
+        await _picker.pickImage(source: source);
+    if (pickedFile ==
+        null)
+      return;
 
-    if (pickedFile !=
-        null) {
-      setState(() {
-        _loading = true;
-        _status = "";
-      });
-      await _deteksiStress(File(pickedFile.path));
-    }
-  }
+    setState(() {
+      _loading = true;
+      _status = "";
+      _tombolKuisioner = false;
+      _sudahSimpan = false;
+    });
 
-  Future<void>
-      ambilDariGaleri() async {
-    final pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile !=
-        null) {
-      setState(() {
-        _loading = true;
-        _status = "";
-      });
-      await _deteksiStress(File(pickedFile.path));
-    }
+    await _deteksiStress(File(pickedFile.path));
   }
 
   Future<void>
@@ -105,56 +96,86 @@ class _KameraPageState
         return;
       }
 
-      final imageBytes = await image.readAsBytes();
-      final decodedImage = img.decodeImage(imageBytes);
-      if (decodedImage == null) {
-        throw Exception("Gagal decode gambar");
-      }
+      final bytes = await image.readAsBytes();
+      final decoded = img.decodeImage(bytes);
+      if (decoded == null)
+        throw Exception("Gagal decode");
 
       final face = faces.first;
       final box = face.boundingBox;
+
       final cropped = img.copyCrop(
-        decodedImage,
-        x: box.left.toInt().clamp(0, decodedImage.width),
-        y: box.top.toInt().clamp(0, decodedImage.height),
-        width: box.width.toInt().clamp(0, decodedImage.width),
-        height: box.height.toInt().clamp(0, decodedImage.height),
+        decoded,
+        x: box.left.toInt().clamp(0, decoded.width),
+        y: box.top.toInt().clamp(0, decoded.height),
+        width: box.width.toInt().clamp(0, decoded.width),
+        height: box.height.toInt().clamp(0, decoded.height),
       );
 
       final now = DateTime.now();
-      final fileName = 'stress_${now.millisecondsSinceEpoch}.png';
-      final appDir = await getApplicationDocumentsDirectory();
-      final savedPath = '${appDir.path}/$fileName';
-      final croppedFile = File(savedPath);
-      await croppedFile.writeAsBytes(img.encodePng(cropped));
+      _jam = DateFormat.Hm().format(now);
+      _tanggal = DateFormat('dd MMMM yyyy').format(now);
 
-      setState(() {
-        _imageFile = croppedFile;
-      });
+      final dir = await getApplicationDocumentsDirectory();
+      final path = '${dir.path}/stress_${now.millisecondsSinceEpoch}.png';
+      final file = File(path)..writeAsBytesSync(img.encodePng(cropped));
 
       final tfliteHelper = TFLiteHelper();
-      final hasil = await tfliteHelper.classifyImage(croppedFile);
+      final hasil = await tfliteHelper.classifyImage(file);
+
+      // DEBUG: Print hasil klasifikasi
+      print("Hasil klasifikasi: $hasil");
+
       final label = hasil.entries.reduce((a, b) => a.value > b.value ? a : b);
 
-      final jam = DateFormat.Hm().format(now);
-      final tanggal = DateFormat('dd MMMM yyyy').format(now);
-      final warna = label.key == "Stres" ? Colors.red : Colors.green;
+      // PERBAIKAN: Bersihkan string dari karakter tersembunyi
+      final cleanedLabel = label.key.trim().replaceAll(RegExp(r'[^\w\s]'), '');
 
-      final item = RiwayatItem(
-        gambar: croppedFile,
-        jam: jam,
-        tanggal: tanggal,
-        status: label.key,
-        warna: warna,
-      );
+      // // DEBUG: Print label yang dipilih
+      // print("Label asli: '${label.key}'");
+      // print("Label dibersihkan: '$cleanedLabel'");
+      // print("Confidence: ${label.value}");
+      // print("Panjang string asli: ${label.key.length}");
+      // print("Panjang string bersih: ${cleanedLabel.length}");
 
-      Provider.of<RiwayatProvider>(context, listen: false).tambahRiwayat(item);
+      // // DEBUG: Print karakter per karakter
+      // print("Karakter dalam label.key:");
+      // for (int i = 0; i < label.key.length; i++) {
+      //   print("  Index $i: '${label.key[i]}' (${label.key.codeUnitAt(i)})");
+      // }
 
       setState(() {
-        _status = label.key;
+        _imageFile = file;
+        _status = cleanedLabel; // Gunakan label yang sudah dibersihkan
         _loading = false;
+        _tombolKuisioner = cleanedLabel.toLowerCase() == "stres";
       });
+
+      // PERBAIKAN: Gunakan perbandingan yang lebih robust
+      if (cleanedLabel.toLowerCase() == "normal") {
+        print("Masuk ke kondisi Normal, akan menyimpan riwayat");
+        final item = RiwayatItem(
+          gambar: file,
+          jam: _jam!,
+          tanggal: _tanggal!,
+          status: "Normal",
+          warna: Colors.green,
+        );
+
+        try {
+          Provider.of<RiwayatProvider>(context, listen: false).tambahRiwayat(item);
+          print("Riwayat Normal berhasil disimpan");
+          _sudahSimpan = true;
+        } catch (e) {
+          print("Error saat menyimpan riwayat Normal: $e");
+        }
+      } else if (cleanedLabel.toLowerCase() == "stres") {
+        print("Terdeteksi stres, tombol kuisioner akan muncul");
+      } else {
+        print("Label tidak dikenali: '$cleanedLabel'");
+      }
     } catch (e) {
+      print("Error di _deteksiStress: $e");
       setState(() {
         _loading = false;
         _status = "Error";
@@ -162,88 +183,128 @@ class _KameraPageState
     }
   }
 
+  Future<bool>
+      _handleBack() async {
+    if (_status == "Stres" &&
+        !_sudahSimpan &&
+        _imageFile != null &&
+        _jam != null &&
+        _tanggal != null) {
+      final item = RiwayatItem(
+        gambar: _imageFile!,
+        jam: _jam!,
+        tanggal: _tanggal!,
+        status: "Stres",
+        warna: Colors.red,
+        catatan: "Tanpa Isi Kuisioner",
+      );
+      Provider.of<RiwayatProvider>(context, listen: false).tambahRiwayat(item);
+      _sudahSimpan = true;
+    }
+    return true;
+  }
+
   @override
   Widget
       build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1D9B6C),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: const BackButton(color: Colors.white),
-        title: const Text("Kamera", style: TextStyle(color: Colors.white)),
-      ),
-      body: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Color(0xFFF1F7F5),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
+    return WillPopScope(
+      onWillPop: _handleBack,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF1D9B6C),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: const BackButton(color: Colors.white),
+          title: const Text("Kamera", style: TextStyle(color: Colors.white)),
         ),
-        child: Column(
-          children: [
-            Container(
-              height: 300,
-              width: double.infinity,
-              color: Colors.grey[300],
-              child: _imageFile == null ? Center(child: Icon(Icons.image, size: 100, color: Colors.grey[500])) : Image.file(_imageFile!, fit: BoxFit.cover),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: ambilFoto,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1D9B6C),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              ),
-              child: const Text("Ambil Foto", style: TextStyle(color: Colors.white, fontSize: 16)),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: ambilDariGaleri,
-              style: ElevatedButton.styleFrom(
-                
-                backgroundColor: const Color(0xFF1D9B6C),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 15),
-              ),
-              child: const Text("Ambil Galeri", style: TextStyle(color: Colors.white, fontSize: 16)),
-            ),
-            const SizedBox(height: 16),
-            if (_loading) const CircularProgressIndicator(),
-            if (_status.isNotEmpty)
-              Column(
-                children: [
-                  Text(
-                    "Status: $_status",
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: _status == "Stres" ? Colors.red : Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            const Spacer(),
-            GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PetunjukPage()),
-              ),
-              child: const Text(
-                "Petunjuk Pengambilan Gambar",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueAccent,
-                  decoration: TextDecoration.underline,
+        body: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF1F7F5),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+          ),
+          child: Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  height: 300,
+                  width: double.infinity,
+                  color: Colors.grey[300],
+                  child: _imageFile == null ? Center(child: Icon(Icons.image, size: 100, color: Colors.grey[500])) : Image.file(_imageFile!, fit: BoxFit.cover),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-          ],
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () => _ambilFotoAtauGaleri(ImageSource.camera),
+                child: const Text("Ambil Foto", style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D9B6C),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _ambilFotoAtauGaleri(ImageSource.gallery),
+                child: const Text("Ambil Galeri", style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D9B6C),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 15),
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (_loading) const CircularProgressIndicator(),
+              if (_status.isNotEmpty)
+                Column(
+                  children: [
+                    Text(
+                      "Status: $_status",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: _status == "Stres" || _status == "Wajah Tidak Terdeteksi" ? Colors.red : Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    if (_tombolKuisioner && _imageFile != null && _jam != null && _tanggal != null)
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() => _sudahSimpan = true);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => KuisionerPage(
+                                hasilDeteksi: _status,
+                                gambar: _imageFile!,
+                                jam: _jam!,
+                                tanggal: _tanggal!,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text("Lanjut Kuisioner", style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                        ),
+                      ),
+                  ],
+                ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PetunjukPage())),
+                child: const Text(
+                  "Petunjuk Pengambilan Gambar",
+                  style: TextStyle(color: Colors.blueAccent, decoration: TextDecoration.underline),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );

@@ -13,6 +13,8 @@ class DetailRiwayatPage
       hasil;
   final File
       gambarFile;
+  final String?
+      catatan;
 
   const DetailRiwayatPage({
     super.key,
@@ -20,66 +22,80 @@ class DetailRiwayatPage
     required this.tanggal,
     required this.hasil,
     required this.gambarFile,
+    this.catatan,
   });
+
+  void _konfirmasiHapus(
+      BuildContext context) async {
+    final konfirmasi =
+        await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Hapus Riwayat"),
+        content: const Text("Apakah Anda yakin ingin menghapus riwayat ini?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (konfirmasi ==
+        true) {
+      Provider.of<RiwayatProvider>(context, listen: false).hapusRiwayatByFile(gambarFile);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Riwayat berhasil dihapus")),
+      );
+    }
+  }
 
   @override
   Widget
       build(BuildContext context) {
-    final warna = hasil == "Stres"
-        ? Colors.red
-        : Colors.green;
+    // 🟡 Tentukan warna berdasarkan hasil
+    Color
+        warna;
+    if (hasil ==
+        "Stres") {
+      warna = Colors.red;
+    } else if (hasil ==
+        "Terindikasi Stres") {
+      warna = const Color(0xFFFFC107); // kuning
+    } else {
+      warna = const Color(0xFF1D9B6C); // hijau untuk Normal
+    }
 
     return Scaffold(
       backgroundColor: warna,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: warna, // ✅ hanya background yang berubah
         elevation: 0,
-        leading: const BackButton(color: Colors.white),
+        leading: const BackButton(color: Colors.white), // ⬅ tetap putih
         title: const Text("Detail Riwayat", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
-            onPressed: () async {
-              final konfirmasi = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text("Hapus Riwayat?"),
-                  content: const Text("Apakah kamu yakin ingin menghapus riwayat ini?"),
-                  actions: [
-                    TextButton(
-                      child: const Text("Batal"),
-                      onPressed: () => Navigator.pop(ctx, false),
-                    ),
-                    TextButton(
-                      child: const Text("Hapus", style: TextStyle(color: Colors.red)),
-                      onPressed: () => Navigator.pop(ctx, true),
-                    ),
-                  ],
-                ),
-              );
-
-              if (konfirmasi == true) {
-                final provider = Provider.of<RiwayatProvider>(context, listen: false);
-                provider.hapusRiwayatByFile(gambarFile);
-
-                if (await gambarFile.exists()) {
-                  await gambarFile.delete();
-                }
-
-                Navigator.pop(context);
-              }
-            },
-          )
+            icon: const Icon(Icons.delete_forever, color: Colors.white),
+            tooltip: "Hapus Riwayat Ini",
+            onPressed: () => _konfirmasiHapus(context),
+          ),
         ],
       ),
       body: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
         ),
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               height: 250,
@@ -88,15 +104,23 @@ class DetailRiwayatPage
                 borderRadius: BorderRadius.circular(16),
                 color: Colors.grey[300],
               ),
-              child: Image.file(gambarFile, fit: BoxFit.cover),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(gambarFile, fit: BoxFit.cover),
+              ),
             ),
             const SizedBox(height: 20),
             Text("Jam: $jam", style: const TextStyle(fontSize: 18)),
             Text("Tanggal: $tanggal", style: const TextStyle(fontSize: 18)),
-            Text(
-              "Hasil: $hasil",
-              style: TextStyle(fontSize: 18, color: warna, fontWeight: FontWeight.bold),
-            ),
+            Text("Hasil: $hasil", style: TextStyle(fontSize: 18, color: warna, fontWeight: FontWeight.bold)),
+            if (catatan != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  "Catatan: $catatan",
+                  style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                ),
+              ),
           ],
         ),
       ),

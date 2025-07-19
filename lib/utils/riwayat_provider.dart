@@ -40,11 +40,9 @@ class RiwayatProvider
   Future<void>
       hapusRiwayat(RiwayatItem item) async {
     try {
-      // Hapus file gambar dari penyimpanan
       if (await item.gambar.exists()) {
         await item.gambar.delete();
       }
-
       _riwayatList.remove(item);
       await simpanRiwayatKeFile();
       notifyListeners();
@@ -69,7 +67,7 @@ class RiwayatProvider
     _riwayatList.removeWhere((item) =>
         item.gambar.path ==
         file.path);
-    simpanRiwayatKeFile(); // perbarui file JSON
+    simpanRiwayatKeFile();
     notifyListeners();
   }
 
@@ -80,18 +78,30 @@ class RiwayatProvider
       if (await file.exists()) {
         final contents = await file.readAsString();
         final List<dynamic> jsonList = json.decode(contents);
-
-        // ✅ Hindari duplikasi saat reload
         _riwayatList.clear();
-
         _riwayatList.addAll(
           jsonList.map((jsonItem) => RiwayatItem.fromMap(jsonItem)).toList(),
         );
-
         notifyListeners();
       }
     } catch (e) {
       print("Gagal memuat riwayat: $e");
+    }
+  }
+
+  Future<void>
+      hapusSemuaRiwayat() async {
+    try {
+      for (var item in _riwayatList) {
+        if (await item.gambar.exists()) {
+          await item.gambar.delete();
+        }
+      }
+      _riwayatList.clear();
+      await simpanRiwayatKeFile();
+      notifyListeners();
+    } catch (e) {
+      print('Gagal menghapus semua riwayat: $e');
     }
   }
 }
