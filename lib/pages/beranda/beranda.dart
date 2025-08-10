@@ -57,7 +57,7 @@ class _BerandaState
       title = 'Ciri-Ciri Stres';
       content = '• Sakit kepala, kelelahan, nyeri punggung/leher, jantung berdebar kencang.\n'
           '• Nafas cepat, tekanan darah naik, gangguan pencernaan.\n'
-          '• Sulit berkonsentrasi, pikiran melayang, kecemasan, mudah marah atau mood naik - turun.\n'
+          '• Sulit berkonsentrasi, pikiran melayang, kecemasan, mudah marah atau mood naik - turun, mudah lupa.\n'
           '• Pola tidur terganggu (insomnia atau terlalu banyak tidur), perubahan pola makan, menarik diri dari lingkungan sosial.\n'
           '• Konsentrasi menurun';
     } else if (index ==
@@ -70,7 +70,8 @@ class _BerandaState
       title = 'Penyebab Stres';
       content = '• Tekanan pekerjaan atau akademik (deadline, beban tugas).\n'
           '• Masalah hubungan atau keluarga, konflik interpersonal.\n'
-          '• Kekhawatiran finansial, perubahan hidup besar.';
+          '• Kekhawatiran finansial, perubahan hidup besar.\n'
+          '• Kelelahan yang menumpuk.';
     }
 
     showCardDialog(title,

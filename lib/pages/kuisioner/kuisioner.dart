@@ -37,7 +37,6 @@ class _KuisionerPageState
     "Apakah Anda sulit tidur akhir-akhir ini?",
     "Apakah Anda merasa cemas tanpa alasan jelas?",
     "Apakah Anda kehilangan motivasi beraktivitas?",
-    "Apakah Anda mudah tersinggung?",
     "Apakah Anda merasa tidak mampu menyelesaikan tugas?",
     "Apakah Anda merasa ingin menyendiri?",
     "Apakah Anda merasa sulit berkonsentrasi?",
@@ -47,7 +46,7 @@ class _KuisionerPageState
 
   List<int?>
       _jawaban =
-      List.filled(10, null);
+      List.filled(9, null);
 
   String decisionTree(
       String hasilDeteksi,

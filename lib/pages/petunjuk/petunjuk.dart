@@ -28,11 +28,11 @@ class PetunjukPage
             // 👉 Gambar ditaruh di sini
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 24),
-              height: 180,
+              height: 300,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: const DecorationImage(
-                  image: AssetImage('assets/gambar/logo-1.png'), //Masukkan gambar yang sesuai
+                  image: AssetImage('assets/gambar/petunjuk.png'), //Masukkan gambar yang sesuai
                   fit: BoxFit.cover,
                 ),
               ),
@@ -65,10 +65,10 @@ class PetunjukPage
                     ),
                   ),
                   SizedBox(height: 10),
-                  Text("1. Foto memiliki pencahayaan yang cukup."),
-                  Text("2. Foto tidak blur dan fokus."),
-                  Text("3. Foto dengan latar belakang polos."),
-                  Text("4. Objek dalam foto harus terlihat jelas."),
+                  Text("1. Objek dalam foto harus terlihat jelas."),
+                  Text("2. Foto dengan latar belakang polos."),
+                  Text("3. Foto memiliki pencahayaan yang cukup."),
+                  Text("4. Foto tidak blur dan fokus."),
                   Text("5. Gunakan foto beresolusi baik untuk akurasi tinggi."),
                 ],
               ),
