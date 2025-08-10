@@ -74,6 +74,7 @@ flutter:
     - assets/gambar/
     - assets/model/model_stress.tflite
     - assets/model/label.txt
+    - assets/gambar/petunjuk.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

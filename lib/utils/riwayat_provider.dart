@@ -73,6 +73,12 @@ class RiwayatProvider
     notifyListeners();
   }
 
+  void hapusSemuaRiwayat() {
+  _riwayatList.clear();
+  simpanRiwayatKeFile(); // kalau kamu menyimpan riwayat di file
+  notifyListeners();
+}
+
   Future<void>
       muatRiwayatDariFile() async {
     try {

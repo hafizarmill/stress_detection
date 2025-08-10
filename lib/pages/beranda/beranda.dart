@@ -1,91 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:tes/pages/ambil_foto/kamera.dart';
 import 'package:tes/pages/riwayat/riwayat.dart';
+import 'package:tes/pages/disclaimer/disclaimer.dart'; // pastikan path ini sesuai lokasi file disclaimer.dart
 
-class Beranda
-    extends StatefulWidget {
-  const Beranda(
-      {super.key});
+class Beranda extends StatefulWidget {
+  const Beranda({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _BerandaState createState() =>
-      _BerandaState();
+  _BerandaState createState() => _BerandaState();
 }
 
-class _BerandaState
-    extends State<Beranda> {
-  final PageController
-      _pageController =
-      PageController(
-    initialPage:
-        1,
-    viewportFraction:
-        0.85,
+class _BerandaState extends State<Beranda> {
+  final PageController _pageController = PageController(
+    initialPage: 1,
+    viewportFraction: 0.85,
   );
 
-  int currentIndex =
-      1;
+  int currentIndex = 1;
 
   @override
-  void
-      initState() {
+  void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // buka page tengah
       _pageController.jumpToPage(1);
+
+      // tampilkan popup Disclaimer
+      showDialog(
+        context: context,
+        barrierDismissible: false, // wajib klik tombol
+        builder: (context) => const DisclaimerDialog(),
+      );
     });
   }
 
   @override
-  void
-      dispose() {
+  void dispose() {
     _pageController.dispose();
     super.dispose();
   }
 
-  void handleCardTap(
-      int index) {
-    String
-        title =
-        '';
-    String
-        content =
-        '';
+  void handleCardTap(int index) {
+    String title = '';
+    String content = '';
 
-    if (index ==
-        0) {
+    if (index == 0) {
       title = 'Ciri-Ciri Stres';
-      content = '• Sakit kepala, kelelahan, nyeri punggung/leher, jantung berdebar kencang.\n'
+      content =
+          '• Sakit kepala, kelelahan, nyeri punggung/leher, jantung berdebar kencang.\n'
           '• Nafas cepat, tekanan darah naik, gangguan pencernaan.\n'
           '• Sulit berkonsentrasi, pikiran melayang, kecemasan, mudah marah atau mood naik - turun.\n'
           '• Pola tidur terganggu (insomnia atau terlalu banyak tidur), perubahan pola makan, menarik diri dari lingkungan sosial.\n'
-          '• Konsentrasi menurun';
-    } else if (index ==
-        1) {
+          '• Konsentrasi menurun.';
+    } else if (index == 1) {
       title = 'Penjelasan Stres';
-      content = 'Stres adalah respons tubuh (fisik & psikologis) terhadap tekanan atau tuntutan baik yang jangka pendek (akut) maupun jangka panjang (kronis). '
+      content =
+          'Stres adalah respons tubuh (fisik & psikologis) terhadap tekanan atau tuntutan baik yang jangka pendek (akut) maupun jangka panjang (kronis). '
           'Pada stres akut, tubuh melepaskan hormon seperti adrenalin dan cortisol untuk menghadapi tantangan, sedangkan stres kronis yang terus-menerus '
           'dapat berdampak negatif seperti gangguan mental dan risiko penyakit jantung.';
     } else {
       title = 'Penyebab Stres';
-      content = '• Tekanan pekerjaan atau akademik (deadline, beban tugas).\n'
+      content =
+          '• Tekanan pekerjaan atau akademik (deadline, beban tugas).\n'
           '• Masalah hubungan atau keluarga, konflik interpersonal.\n'
           '• Kekhawatiran finansial, perubahan hidup besar.';
     }
 
-    showCardDialog(title,
-        content);
+    showCardDialog(title, content);
   }
 
-  void showCardDialog(
-      String title,
-      String content) {
+  void showCardDialog(String title, String content) {
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           elevation: 16,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -96,13 +88,16 @@ class _BerandaState
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     content,
                     style: const TextStyle(fontSize: 16),
-                    textAlign: title == 'Penjelasan Stres' ? TextAlign.justify : TextAlign.start,
+                    textAlign: title == 'Penjelasan Stres'
+                        ? TextAlign.justify
+                        : TextAlign.start,
                   ),
                 ],
               ),
@@ -114,8 +109,7 @@ class _BerandaState
   }
 
   @override
-  Widget
-      build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1D9B6C),
       body: SafeArea(
@@ -123,14 +117,19 @@ class _BerandaState
           children: [
             // Atas: Salam dan scroll card
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Halo,", style: TextStyle(color: Colors.white, fontSize: 20)),
+                  const Text("Halo,",
+                      style: TextStyle(color: Colors.white, fontSize: 20)),
                   const Text(
                     "Selamat Datang",
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
 
@@ -148,7 +147,8 @@ class _BerandaState
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 8.0),
                           child: GestureDetector(
                             onTap: () => handleCardTap(index),
                             child: Container(
@@ -157,7 +157,10 @@ class _BerandaState
                                 color: const Color(0xFFE2F6F2),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: const [
-                                  BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 2)),
+                                  BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 6,
+                                      offset: Offset(0, 2)),
                                 ],
                               ),
                               child: Row(
@@ -170,8 +173,10 @@ class _BerandaState
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           index == 0
@@ -179,12 +184,15 @@ class _BerandaState
                                               : index == 1
                                                   ? "Penjelasan Stres"
                                                   : "Penyebab Stres",
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const Icon(Icons.info_outline, color: Colors.teal),
+                                  const Icon(Icons.info_outline,
+                                      color: Colors.teal),
                                 ],
                               ),
                             ),
@@ -205,7 +213,9 @@ class _BerandaState
                         width: currentIndex == index ? 30 : 10,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: currentIndex == index ? Colors.white : Colors.white54,
+                          color: currentIndex == index
+                              ? Colors.white
+                              : Colors.white54,
                           borderRadius: BorderRadius.circular(10),
                         ),
                       );
@@ -233,7 +243,10 @@ class _BerandaState
                           icon: Icons.camera_alt,
                           label: "Gambar",
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => Kamera()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Kamera()));
                           },
                         ),
                         const SizedBox(height: 40),
@@ -241,7 +254,10 @@ class _BerandaState
                           icon: Icons.history,
                           label: "Riwayat",
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => Riwayat()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Riwayat()));
                           },
                         ),
                       ],
@@ -254,7 +270,10 @@ class _BerandaState
                     left: 30,
                     child: Text(
                       "Mari cek stres:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
                     ),
                   ),
                 ],
@@ -266,14 +285,10 @@ class _BerandaState
     );
   }
 
-  Widget
-      fiturCard({
-    required IconData
-        icon,
-    required String
-        label,
-    required VoidCallback
-        onTap,
+  Widget fiturCard({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -291,7 +306,9 @@ class _BerandaState
           children: [
             Icon(icon, color: Colors.green, size: 40),
             const SizedBox(height: 10),
-            Text(label, style: const TextStyle(fontSize: 16, color: Colors.black)),
+            Text(label,
+                style:
+                    const TextStyle(fontSize: 16, color: Colors.black)),
           ],
         ),
       ),

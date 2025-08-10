@@ -25,20 +25,19 @@ class DetailRiwayatPage
   @override
   Widget
       build(BuildContext context) {
-    final warna = hasil == "Stres"
-        ? Colors.red
-        : Colors.green;
-
     return Scaffold(
-      backgroundColor: warna,
+      backgroundColor: const Color(0xFF1D9B6C), // background halaman
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1D9B6C),
         elevation: 0,
         leading: const BackButton(color: Colors.white),
-        title: const Text("Detail Riwayat", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Detail Riwayat",
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
+            icon: const Icon(Icons.delete_forever, color: Colors.white),
             onPressed: () async {
               final konfirmasi = await showDialog<bool>(
                 context: context,
@@ -51,7 +50,10 @@ class DetailRiwayatPage
                       onPressed: () => Navigator.pop(ctx, false),
                     ),
                     TextButton(
-                      child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+                      child: const Text(
+                        "Hapus",
+                        style: TextStyle(color: Colors.red),
+                      ),
                       onPressed: () => Navigator.pop(ctx, true),
                     ),
                   ],
@@ -81,21 +83,37 @@ class DetailRiwayatPage
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Container(
-              height: 250,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: Colors.grey[300],
+            // Gambar dengan border radius
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.file(
+                gambarFile,
+                fit: BoxFit.cover,
+                width: double.infinity,
               ),
-              child: Image.file(gambarFile, fit: BoxFit.cover),
             ),
             const SizedBox(height: 20),
-            Text("Jam: $jam", style: const TextStyle(fontSize: 18)),
-            Text("Tanggal: $tanggal", style: const TextStyle(fontSize: 18)),
+
+            // Jam
+            Text(
+              "Jam: $jam",
+              style: const TextStyle(fontSize: 18),
+            ),
+
+            // Tanggal
+            Text(
+              "Tanggal: $tanggal",
+              style: const TextStyle(fontSize: 18),
+            ),
+
+            // Hasil
             Text(
               "Hasil: $hasil",
-              style: TextStyle(fontSize: 18, color: warna, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

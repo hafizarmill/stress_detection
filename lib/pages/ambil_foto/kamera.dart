@@ -3,45 +3,33 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tes/utils/tflite_helper.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:image/image.dart'
-    as img;
+import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:tes/utils/riwayat_provider.dart';
 import 'package:tes/utils/riwayat_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tes/pages/petunjuk/petunjuk.dart';
 
-class Kamera
-    extends StatefulWidget {
+class Kamera extends StatefulWidget {
   @override
-  _KameraPageState createState() =>
-      _KameraPageState();
+  _KameraPageState createState() => _KameraPageState();
 }
 
-class _KameraPageState
-    extends State<Kamera> {
-  File?
-      _imageFile;
-  final ImagePicker
-      _picker =
-      ImagePicker();
-  String
-      _status =
-      "";
-  bool
-      _loading =
-      false;
+class _KameraPageState extends State<Kamera> {
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
+  String _status = "";
+  bool _loading = false;
 
-  late final FaceDetector
-      _faceDetector;
+  late final FaceDetector _faceDetector;
 
   @override
-  void
-      initState() {
+  void initState() {
     super.initState();
-    _faceDetector =
-        FaceDetector(
+    initializeDateFormatting('id', null);
+    _faceDetector = FaceDetector(
       options: FaceDetectorOptions(
         enableContours: false,
         enableClassification: false,
@@ -51,22 +39,18 @@ class _KameraPageState
   }
 
   @override
-  void
-      dispose() {
+  void dispose() {
     _faceDetector.close();
     super.dispose();
   }
 
-  Future<void>
-      ambilFoto() async {
-    final pickedFile =
-        await _picker.pickImage(
+  Future<void> ambilFoto() async {
+    final pickedFile = await _picker.pickImage(
       source: ImageSource.camera,
       preferredCameraDevice: CameraDevice.front,
     );
 
-    if (pickedFile !=
-        null) {
+    if (pickedFile != null) {
       setState(() {
         _loading = true;
         _status = "";
@@ -75,13 +59,10 @@ class _KameraPageState
     }
   }
 
-  Future<void>
-      ambilDariGaleri() async {
-    final pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> ambilDariGaleri() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile !=
-        null) {
+    if (pickedFile != null) {
       setState(() {
         _loading = true;
         _status = "";
@@ -90,8 +71,7 @@ class _KameraPageState
     }
   }
 
-  Future<void>
-      _deteksiStress(File image) async {
+  Future<void> _deteksiStress(File image) async {
     try {
       final inputImage = InputImage.fromFile(image);
       final faces = await _faceDetector.processImage(inputImage);
@@ -134,24 +114,26 @@ class _KameraPageState
 
       final tfliteHelper = TFLiteHelper();
       final hasil = await tfliteHelper.classifyImage(croppedFile);
-      final label = hasil.entries.reduce((a, b) => a.value > b.value ? a : b);
 
-      final jam = DateFormat.Hm().format(now);
-      final tanggal = DateFormat('dd MMMM yyyy').format(now);
+      final label = hasil.entries.reduce((a, b) => a.value > b.value ? a : b);
+      final confidence = (label.value * 100).toStringAsFixed(2);
+
+      final jam = DateFormat.Hm('id').format(now);
+      final tanggal = DateFormat('dd MMMM yyyy', 'id').format(now);
       final warna = label.key == "Stres" ? Colors.red : Colors.green;
 
       final item = RiwayatItem(
         gambar: croppedFile,
         jam: jam,
         tanggal: tanggal,
-        status: label.key,
+        status: "${label.key} ($confidence%)",
         warna: warna,
       );
 
       Provider.of<RiwayatProvider>(context, listen: false).tambahRiwayat(item);
 
       setState(() {
-        _status = label.key;
+        _status = "${label.key} ($confidence%)";
         _loading = false;
       });
     } catch (e) {
@@ -163,8 +145,7 @@ class _KameraPageState
   }
 
   @override
-  Widget
-      build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1D9B6C),
       appBar: AppBar(
@@ -185,35 +166,64 @@ class _KameraPageState
         ),
         child: Column(
           children: [
-            Container(
-              height: 300,
-              width: double.infinity,
-              color: Colors.grey[300],
-              child: _imageFile == null ? Center(child: Icon(Icons.image, size: 100, color: Colors.grey[500])) : Image.file(_imageFile!, fit: BoxFit.cover),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20), // sudut melengkung kotak
+              child: Container(
+                height: 300,
+                width: double.infinity,
+                color: Colors.grey[300],
+                child: _imageFile == null
+                    ? Center(
+                        child: Icon(
+                          Icons.image,
+                          size: 100,
+                          color: Colors.grey[500],
+                        ),
+                      )
+                    : Image.file(
+                        _imageFile!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+              ),
             ),
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: ambilFoto,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1D9B6C),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
-              child: const Text("Ambil Foto", style: TextStyle(color: Colors.white, fontSize: 16)),
+              child: const Text("Ambil Foto",
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: ambilDariGaleri,
               style: ElevatedButton.styleFrom(
-                
                 backgroundColor: const Color(0xFF1D9B6C),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 15),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 45, vertical: 15),
               ),
-              child: const Text("Ambil Galeri", style: TextStyle(color: Colors.white, fontSize: 16)),
+              child: const Text("Ambil Galeri",
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
             const SizedBox(height: 16),
-            if (_loading) const CircularProgressIndicator(),
+            if (_loading)
+              const Text(
+                "Sedang di Proses ...",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black54,
+                ),
+              ),
             if (_status.isNotEmpty)
               Column(
                 children: [
@@ -221,7 +231,9 @@ class _KameraPageState
                     "Status: $_status",
                     style: TextStyle(
                       fontSize: 20,
-                      color: _status == "Stres" ? Colors.red : Colors.green,
+                      color: _status.contains("Stres")
+                          ? Colors.red
+                          : Colors.green,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -236,8 +248,8 @@ class _KameraPageState
               child: const Text(
                 "Petunjuk Pengambilan Gambar",
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueAccent,
+                  fontSize: 20,
+                  color: Color.fromARGB(255, 0, 0, 0),
                   decoration: TextDecoration.underline,
                 ),
               ),
