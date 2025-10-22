@@ -1,94 +1,56 @@
 name: tes
 description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # proyek tidak akan dipublikasikan ke pub.dev (hanya untuk lokal)
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-# In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.0+1 # versi aplikasi (1.0.0) + build number (1)
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.5.4 # versi minimum SDK Dart yang digunakan
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.2.1
-  cupertino_icons: ^1.0.8
-  image_picker: ^1.1.2
-  tflite_flutter: ^0.11.0
-  image: ^4.5.2
-  google_mlkit_face_detection: ^0.13.1
-  fluttertoast: ^8.2.12
-  provider: ^6.1.1
-  intl: ^0.18.1
-  path_provider: ^2.1.2
+
+  # ✅ FONT & UI
+  google_fonts: ^6.2.1 # untuk menggunakan font dari Google Fonts (misal Poppins)
+  cupertino_icons: ^1.0.8 # ikon gaya iOS
+  
+  # ✅ GAMBAR & MODEL MACHINE LEARNING
+  image_picker: ^1.1.2 # ambil gambar dari kamera atau galeri
+  tflite_flutter: ^0.11.0 # menjalankan model TensorFlow Lite (deteksi stres)
+  image: ^4.5.2 # manipulasi gambar (resize, decoding, dsb)
+  google_mlkit_face_detection: ^0.13.1 # deteksi wajah menggunakan ML Kit Google
+  
+  # ✅ STATE MANAGEMENT & PENYIMPANAN
+  provider: ^6.1.1 # state management, digunakan untuk RiwayatProvider
+  intl: ^0.18.1 # format tanggal & jam lokal (misalnya Indonesia)
+  path_provider: ^2.1.2 # akses direktori penyimpanan lokal perangkat (untuk simpan file JSON riwayat)
 
 dev_dependencies:
-
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.13.1 # mengatur ikon aplikasi (logo utama)
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/icon/logo.png"
+  image_path: "assets/icon/logo.png" # lokasi ikon aplikasi
+
   flutter_test:
-    sdk: flutter
+    sdk: flutter # untuk testing Flutter (opsional)
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^4.0.0 # aturan coding style dan rekomendasi best practice dari Flutter
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
-  uses-material-design: true
+  uses-material-design: true # aktifkan penggunaan ikon Material Design bawaan Flutter
 
-  # To add assets to your application, add an assets section, like this:
-
+  # ✅ ASET GAMBAR & MODEL
   assets:
-    - assets/gambar/
-    - assets/model/model_stress.tflite
-    - assets/model/label.txt
-    - assets/gambar/petunjuk.png
+    - assets/gambar/ # folder berisi gambar umum (misalnya untuk UI)
+    - assets/model/model_stress.tflite # model TensorFlow Lite untuk klasifikasi stres
+    - assets/model/label.txt # label kelas dari model (misalnya [Normal, Stres])
+    - assets/gambar/petunjuk.png # gambar instruksi pada halaman petunjuk
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
+  # ✅ FONT CUSTOM
   fonts:
-    - family: Poppins
+    - family: Poppins # nama font family yang digunakan di seluruh aplikasi
       fonts:
         - asset: assets/font/Poppins-Regular.ttf
         - asset: assets/font/Poppins-Bold.ttf
@@ -97,16 +59,3 @@ flutter:
           weight: 600
         - asset: assets/font/Poppins-Medium.ttf
           weight: 500
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
